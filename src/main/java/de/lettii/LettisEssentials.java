@@ -3,8 +3,6 @@ package de.lettii;
 import de.lettii.commands.KeepChunkCommand;
 import de.lettii.listener.ChunkUnloadListener;
 import de.lettii.listener.CreeperExplosionListener;
-import de.lettii.listener.PhantomSpawnListener;
-import de.lettii.listener.PlayerPostRespawnListener;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -14,6 +12,7 @@ public final class LettisEssentials extends JavaPlugin {
     @Override
     public void onEnable() {
         // Plugin startup logic
+        saveResource("chunks.yml", false);
         register();
         Bukkit.getConsoleSender().sendMessage("Loaded Letti's Essentials Plugin");
     }
@@ -28,12 +27,10 @@ public final class LettisEssentials extends JavaPlugin {
         PluginManager manager = Bukkit.getPluginManager();
 
         // register listeners
-//        manager.registerEvents(new ChunkUnloadListener(), this);
         manager.registerEvents(new CreeperExplosionListener(), this);
-//        manager.registerEvents(new PhantomSpawnListener(), this);
-//        manager.registerEvents(new PlayerPostRespawnListener(), this);
+        manager.registerEvents(new ChunkUnloadListener(), this);
 
         // register commands
-//        Bukkit.getPluginCommand("keepchunk").setExecutor(new KeepChunkCommand());
+        Bukkit.getPluginCommand("keepchunk").setExecutor(new KeepChunkCommand());
     }
 }

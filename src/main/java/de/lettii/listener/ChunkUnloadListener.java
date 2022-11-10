@@ -18,6 +18,6 @@ public class ChunkUnloadListener implements Listener {
 
     @EventHandler
     public void onChunkUnload(ChunkUnloadEvent event) {
-        Bukkit.getConsoleSender().sendMessage("X: " + event.getChunk().getX()+ " Z: " + event.getChunk().getZ());
+//        Bukkit.getConsoleSender().sendMessage("X: " + event.getChunk().getX()+ " Z: " + event.getChunk().getZ());
     }
 }
