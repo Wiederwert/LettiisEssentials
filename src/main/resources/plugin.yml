@@ -1,0 +1,14 @@
+name: LettisEssentials
+version: '${project.version}'
+main: de.lettii.LettisEssentials
+api-version: 1.19
+authors: [ Letti ]
+
+commands:
+  keepchunk:
+    description: Keeps a chunk always loaded.
+
+permissions:
+  de.letti.keep-chunk:
+    description: Keeps a chunk always loaded.
+    default: op
