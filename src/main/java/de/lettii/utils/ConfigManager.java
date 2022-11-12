@@ -25,7 +25,7 @@ public class ConfigManager extends YamlConfiguration {
         try {
             save(this.path);
         } catch (IOException e) {
-            Bukkit.getConsoleSender().sendMessage("Cannt save config file: " + this.path);
+            Bukkit.getConsoleSender().sendMessage("Cannot save config file: " + this.path);
         }
     }
 }

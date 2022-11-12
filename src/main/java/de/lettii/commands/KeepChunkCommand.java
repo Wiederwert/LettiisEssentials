@@ -1,5 +1,7 @@
 package de.lettii.commands;
 
+import de.lettii.dao.ChunkDAO;
+import de.lettii.utils.ChunkLoadEnforcer;
 import de.lettii.utils.ConfigManager;
 import org.bukkit.Chunk;
 import org.bukkit.Server;
@@ -8,6 +10,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
+import org.bukkit.configuration.Configuration;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -21,16 +24,21 @@ import java.util.stream.Collectors;
 public class KeepChunkCommand implements CommandExecutor, TabCompleter {
 
     public static final String PERMISSION_LABEL = "de.letti.keep-chunk";
-    public static final String LABEL = "keepchunk";
-    private static final String CONFIG_NAME = "chunks.yml";
-    private static final ConfigManager CONFIG = new ConfigManager(CONFIG_NAME);
+    private final String CONFIG_KEEPCHUNKS_KEY = "keep-chunks";
+    private final ChunkLoadEnforcer CHUNK_LOAD_ENFORCER;
+    private final ConfigManager CONFIG;
+    private final String LABEL;
 
-    public KeepChunkCommand() {
+    public KeepChunkCommand(String label, ConfigManager config, ChunkLoadEnforcer enforcer) {
         super();
+        LABEL = label;
+        CONFIG = config;
+        CHUNK_LOAD_ENFORCER = enforcer;
     }
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+        sender.sendMessage(String.valueOf(CONFIG.getRoot().getCurrentPath()));
         boolean keep = true;
         int x = 0, z = 0;
         World world = null;
@@ -69,6 +77,8 @@ public class KeepChunkCommand implements CommandExecutor, TabCompleter {
                 if (args.length == 0) {
                     world = player.getWorld();
                     chunk = player.getChunk();
+                    x = chunk.getX();
+                    z = chunk.getZ();
                 } else {
                     if (world == null) {
                         world = player.getWorld();
@@ -83,17 +93,15 @@ public class KeepChunkCommand implements CommandExecutor, TabCompleter {
                 chunk = world.getChunkAt(x, z);
             }
 
+            String configChunkPath = getConfigPathForChunk(chunk);
             if (keep) {
-                Map<String, Object> chunkInfo = new HashMap<>();
-                chunkInfo.put("X", chunk.getX());
-                chunkInfo.put("Z", chunk.getZ());
-                chunkInfo.put("world", chunk.getWorld().getName());
-
-                CONFIG.set(String.valueOf(chunk.getChunkKey()), chunkInfo);
+                CONFIG.set(configChunkPath, new ChunkDAO(chunk));
+                CHUNK_LOAD_ENFORCER.enforceLoadingChunk(chunk);
                 sender.sendMessage("Saved chunk[" + x + "," + z + "," + world.getName() + "] for keeping.");
             } else {
-                if (CONFIG.contains(String.valueOf(chunk.getChunkKey()))) {
-                    CONFIG.set(String.valueOf(chunk.getChunkKey()), null);
+                if (CONFIG.contains(configChunkPath)) {
+                    CONFIG.set(configChunkPath, null);
+                    CHUNK_LOAD_ENFORCER.enforceLoadingChunk(chunk, false);
                     sender.sendMessage("Removed chunk[" + x + "," + z + "," + world.getName() + "] for keeping.");
                 } else {
                     sender.sendMessage("chunk[" + x + "," + z + "," + world.getName() + "] was not registered.");
@@ -148,5 +156,18 @@ public class KeepChunkCommand implements CommandExecutor, TabCompleter {
             }
         }
         return list;
+    }
+
+    private String getConfigPathForChunk(Chunk chunk) {
+        return CONFIG_KEEPCHUNKS_KEY + getConfigSeparator() + chunk.getChunkKey();
+    }
+
+    private char getConfigSeparator() {
+        char separator = '.';
+        Configuration root = CONFIG.getRoot();
+        if (root != null) {
+            separator = root.options().pathSeparator();
+        }
+        return separator;
     }
 }

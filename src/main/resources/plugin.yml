@@ -1,6 +1,6 @@
 name: LettisEssentials
 version: '${project.version}'
-main: de.lettii.LettisEssentials
+main: de.lettii.LettisEssentialsPlugin
 api-version: 1.19
 authors: [ Letti ]
 
